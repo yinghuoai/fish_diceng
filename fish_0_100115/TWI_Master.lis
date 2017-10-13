@@ -1,0 +1,775 @@
+                        .module TWI_Master.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile G:\wsg\SchoolTrain\FishRobot\机器鱼\机器鱼培训资料\机器鱼培训资料\机器鱼鱼体波程序\fish_0_100115\TWI_Master.c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile G:\wsg\SchoolTrain\FishRobot\机器鱼\机器鱼培训资料\机器鱼培训资料\机器鱼鱼体波程序\fish_0_100115\TWI_Master.c
+ 0000           _TWI_state:
+ 0000                   .blkb 1
+                        .area idata
+ 0000 F8                .byte 248
+                        .area data(ram, con, rel)
+ 0001                   .dbfile G:\wsg\SchoolTrain\FishRobot\机器鱼\机器鱼培训资料\机器鱼培训资料\机器鱼鱼体波程序\fish_0_100115\TWI_Master.c
+ 0001                   .dbsym s TWI_state _TWI_state c
+ 0001           _TWI_statusReg::
+ 0001                   .blkb 1
+                        .area idata
+ 0001 00                .byte 0
+                        .area data(ram, con, rel)
+ 0002                   .dbfile G:\wsg\SchoolTrain\FishRobot\机器鱼\机器鱼培训资料\机器鱼培训资料\机器鱼鱼体波程序\fish_0_100115\TWI_Master.c
+ 0002                   .dbsym e TWI_statusReg _TWI_statusReg c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile G:\wsg\SchoolTrain\FishRobot\机器鱼\机器鱼培训资料\机器鱼培训资料\机器鱼鱼体波程序\fish_0_100115\TWI_Master.c
+ 0000                   .dbfunc e TWI_Master_Initialise _TWI_Master_Initialise fV
+                        .even
+ 0000           _TWI_Master_Initialise::
+ 0000                   .dbline -1
+ 0000                   .dbline 41
+ 0000           ; /*****************************************************************************
+ 0000           ; *
+ 0000           ; * Atmel Corporation
+ 0000           ; *
+ 0000           ; * File              : TWI_Master.c
+ 0000           ; * Compiler          : ICCAVR
+ 0000           ; * Revision          : Revision: 2.0
+ 0000           ; * Date              : Date: 2005-7-19
+ 0000           ; * Updated by        : Author: Yonghui Hu
+ 0000           ; *
+ 0000           ; * Support mail      : yonghhu@pku.edu.cn
+ 0000           ; *
+ 0000           ; * Supported devices : All devices with a TWI module can be used.
+ 0000           ; *                     The example is written for the ATmega16
+ 0000           ; *
+ 0000           ; * AppNote           : AVR315 - TWI Master Implementation
+ 0000           ; *
+ 0000           ; * Description       : This is a sample driver for the TWI hardware modules.
+ 0000           ; *                     It is interrupt driveren. All functionality is controlled through 
+ 0000           ; *                     passing information to and from functions. Se main.c for samples
+ 0000           ; *                     of how to use the driver.
+ 0000           ; *
+ 0000           ; *
+ 0000           ; ****************************************************************************/
+ 0000           ; 
+ 0000           ; #include "iom128v.h"              
+ 0000           ; #include "macros.h"
+ 0000           ; #include "TWI_Master.h"
+ 0000           ; 
+ 0000           ; unsigned char TWI_buf[ TWI_BUFFER_SIZE ];    // Transceiver buffer
+ 0000           ; static unsigned char TWI_msgSize;             // Number of bytes to be transmitted.
+ 0000           ; static unsigned char TWI_state = TWI_NO_STATE;// State byte. Default set to TWI_NO_STATE.
+ 0000           ; 
+ 0000           ; unsigned char TWI_statusReg=0;                // TWI_statusReg is defined in TWI_Master.h
+ 0000           ; 
+ 0000           ; /****************************************************************************
+ 0000           ; Call this function to set up the TWI master to its initial standby state.
+ 0000           ; Remember to enable interrupts from the main application after initializing the TWI.
+ 0000           ; ****************************************************************************/
+ 0000           ; void TWI_Master_Initialise(void)
+ 0000           ; {
+ 0000                   .dbline 42
+ 0000           ;   TWBR = TWI_TWBR;               //*设置波特率，当处于主机模式时，用来产生SCL引脚上的时钟信号
+ 0000 8CE0              ldi R24,12
+ 0002 80937000          sts 112,R24
+ 0006                   .dbline 45
+ 0006           ;                                  // Set bit rate register (Baudrate). Defined in header file.
+ 0006           ;                                  // Not used. Driver presumes prescaler to be 00.
+ 0006           ;   TWDR = 0xFF;                 //*默认值
+ 0006 8FEF              ldi R24,255
+ 0008 80937300          sts 115,R24
+ 000C                   .dbline 49
+ 000C           ;                               // Default content = SDA released.
+ 000C           ;  
+ 000C           ;   //*使能IIC
+ 000C           ;   TWCR = (1<<TWEN)|                                 // Enable TWI-interface and release TWI pins.
+ 000C 84E0              ldi R24,4
+ 000E 80937400          sts 116,R24
+ 0012                   .dbline -2
+ 0012           L1:
+ 0012                   .dbline 0 ; func end
+ 0012 0895              ret
+ 0014                   .dbend
+ 0014                   .dbfunc e TWI_Transceiver_Busy _TWI_Transceiver_Busy fc
+                        .even
+ 0014           _TWI_Transceiver_Busy::
+ 0014                   .dbline -1
+ 0014                   .dbline 60
+ 0014           ;          (0<<TWIE)|(0<<TWINT)|                      // Disable Interupt.
+ 0014           ;          (0<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|           // No Signal requests.
+ 0014           ;          (0<<TWWC);                                 //
+ 0014           ;   
+ 0014           ; }    
+ 0014           ;     
+ 0014           ; /****************************************************************************
+ 0014           ; Call this function to test if the TWI_ISR is busy transmitting.
+ 0014           ; ****************************************************************************/
+ 0014           ; unsigned char TWI_Transceiver_Busy( void )
+ 0014           ; {
+ 0014                   .dbline 62
+ 0014           ;                // IF TWI Interrupt is enabled then the Transceiver is busy
+ 0014           ;     return ( TWCR & (1<<TWIE) );
+ 0014 00917400          lds R16,116
+ 0018 0170              andi R16,1
+ 001A                   .dbline -2
+ 001A           L2:
+ 001A                   .dbline 0 ; func end
+ 001A 0895              ret
+ 001C                   .dbend
+ 001C                   .dbfunc e TWI_Get_State_Info _TWI_Get_State_Info fc
+                        .even
+ 001C           _TWI_Get_State_Info::
+ 001C                   .dbline -1
+ 001C                   .dbline 71
+ 001C           ; }
+ 001C           ; 
+ 001C           ; /****************************************************************************
+ 001C           ; Call this function to fetch the state information of the previous operation. The function will hold execution (loop)
+ 001C           ; until the TWI_ISR has completed with the previous operation. If there was an error, then the function 
+ 001C           ; will return the TWI State code. 
+ 001C           ; ****************************************************************************/
+ 001C           ; unsigned char TWI_Get_State_Info( void )
+ 001C           ; {
+ 001C           L4:
+ 001C                   .dbline 72
+ 001C           ;   while ( TWI_Transceiver_Busy() );             // Wait until TWI has completed the transmission.
+ 001C           L5:
+ 001C                   .dbline 72
+ 001C FBDF              xcall _TWI_Transceiver_Busy
+ 001E 0023              tst R16
+ 0020 E9F7              brne L4
+ 0022           X0:
+ 0022                   .dbline 73
+ 0022           ;   return ( TWI_state );                         // Return error state.
+ 0022 00910000          lds R16,_TWI_state
+ 0026                   .dbline -2
+ 0026           L3:
+ 0026                   .dbline 0 ; func end
+ 0026 0895              ret
+ 0028                   .dbend
+ 0028                   .dbfunc e TWI_Start_Transceiver_With_Data _TWI_Start_Transceiver_With_Data fV
+ 0028           ;           temp -> R20
+ 0028           ;        msgSize -> R12
+ 0028           ;            msg -> R10,R11
+                        .even
+ 0028           _TWI_Start_Transceiver_With_Data::
+ 0028 0E940000          xcall push_xgset303C
+ 002C C22E              mov R12,R18
+ 002E 5801              movw R10,R16
+ 0030                   .dbline -1
+ 0030                   .dbline 84
+ 0030           ; }
+ 0030           ; 
+ 0030           ; /****************************************************************************
+ 0030           ; Call this function to send a prepared message. The first byte must contain the slave address and the
+ 0030           ; read/write bit. Consecutive bytes contain the data to be sent, or empty locations for data to be read
+ 0030           ; from the slave. Also include how many bytes that should be sent/read including the address byte.
+ 0030           ; The function will hold execution (loop) until the TWI_ISR has completed with the previous operation,
+ 0030           ; then initialize the next operation and return.
+ 0030           ; ****************************************************************************/
+ 0030           ; void TWI_Start_Transceiver_With_Data( unsigned char *msg, unsigned char msgSize )
+ 0030           ; {
+ 0030           L8:
+ 0030                   .dbline 87
+ 0030           ;   unsigned char temp;
+ 0030           ; 
+ 0030           ;   while ( TWI_Transceiver_Busy() );            // Wait until TWI is ready for next transmission.
+ 0030           L9:
+ 0030                   .dbline 87
+ 0030 F1DF              xcall _TWI_Transceiver_Busy
+ 0032 0023              tst R16
+ 0034 E9F7              brne L8
+ 0036           X1:
+ 0036                   .dbline 89
+ 0036           ; 
+ 0036           ;   TWI_msgSize = msgSize;                        // Number of data to transmit.
+ 0036 C0920100          sts _TWI_msgSize,R12
+ 003A                   .dbline 90
+ 003A           ;   TWI_buf[0]  = msg[0];                         // Store slave address with R/W setting.
+ 003A F501              movw R30,R10
+ 003C 2080              ldd R2,z+0
+ 003E 20920200          sts _TWI_buf,R2
+ 0042                   .dbline 91
+ 0042           ;   if (!( msg[0] & (TRUE<<TWI_READ_BIT) ))       // If it is a write operation, then also copy data.
+ 0042 20FC              sbrc R2,0
+ 0044 11C0              rjmp L11
+ 0046           X2:
+ 0046                   .dbline 92
+ 0046           ;   {
+ 0046                   .dbline 93
+ 0046           ;     for ( temp = 1; temp < msgSize; temp++ )
+ 0046 41E0              ldi R20,1
+ 0048 0DC0              xjmp L16
+ 004A           L13:
+ 004A                   .dbline 94
+ 004A           ;       TWI_buf[ temp ] = msg[ temp ];
+ 004A E42F              mov R30,R20
+ 004C FF27              clr R31
+ 004E EA0D              add R30,R10
+ 0050 FB1D              adc R31,R11
+ 0052 2080              ldd R2,z+0
+ 0054 80E0              ldi R24,<_TWI_buf
+ 0056 90E0              ldi R25,>_TWI_buf
+ 0058 E42F              mov R30,R20
+ 005A FF27              clr R31
+ 005C E80F              add R30,R24
+ 005E F91F              adc R31,R25
+ 0060 2082              std z+0,R2
+ 0062           L14:
+ 0062                   .dbline 93
+ 0062 4395              inc R20
+ 0064           L16:
+ 0064                   .dbline 93
+ 0064 4C15              cp R20,R12
+ 0066 88F3              brlo L13
+ 0068           X3:
+ 0068                   .dbline 95
+ 0068           ;   }
+ 0068           L11:
+ 0068                   .dbline 96
+ 0068           ;   TWI_statusReg = FALSE;      
+ 0068 2224              clr R2
+ 006A 20920100          sts _TWI_statusReg,R2
+ 006E                   .dbline 97
+ 006E           ;   TWI_state = TWI_NO_STATE ;
+ 006E 88EF              ldi R24,248
+ 0070 80930000          sts _TWI_state,R24
+ 0074                   .dbline 98
+ 0074           ;   TWCR = (1<<TWEN)|                             // TWI Interface enabled.
+ 0074 85EA              ldi R24,165
+ 0076 80937400          sts 116,R24
+ 007A                   .dbline -2
+ 007A           L7:
+ 007A                   .dbline 0 ; func end
+ 007A 0C940000          xjmp pop_xgset303C
+ 007E                   .dbsym r temp 20 c
+ 007E                   .dbsym r msgSize 12 c
+ 007E                   .dbsym r msg 10 pc
+ 007E                   .dbend
+ 007E                   .dbfunc e TWI_Start_Transceiver _TWI_Start_Transceiver fV
+                        .even
+ 007E           _TWI_Start_Transceiver::
+ 007E                   .dbline -1
+ 007E                   .dbline 110
+ 007E           ;          (1<<TWIE)|(1<<TWINT)|                  // Enable TWI Interupt and clear the flag.
+ 007E           ;          (0<<TWEA)|(1<<TWSTA)|(0<<TWSTO)|       // Initiate a START condition.
+ 007E           ;          (0<<TWWC);                             //
+ 007E           ; }
+ 007E           ; 
+ 007E           ; /****************************************************************************
+ 007E           ; Call this function to resend the last message. The driver will reuse the data previously put in the transceiver buffers.
+ 007E           ; The function will hold execution (loop) until the TWI_ISR has completed with the previous operation,
+ 007E           ; then initialize the next operation and return.
+ 007E           ; ****************************************************************************/
+ 007E           ; void TWI_Start_Transceiver( void )
+ 007E           ; {
+ 007E           L18:
+ 007E                   .dbline 111
+ 007E           ;   while ( TWI_Transceiver_Busy() );             // Wait until TWI is ready for next transmission.
+ 007E           L19:
+ 007E                   .dbline 111
+ 007E CADF              xcall _TWI_Transceiver_Busy
+ 0080 0023              tst R16
+ 0082 E9F7              brne L18
+ 0084           X4:
+ 0084                   .dbline 112
+ 0084           ;   TWI_statusReg =FALSE;      
+ 0084 2224              clr R2
+ 0086 20920100          sts _TWI_statusReg,R2
+ 008A                   .dbline 113
+ 008A           ;   TWI_state         = TWI_NO_STATE ;
+ 008A 88EF              ldi R24,248
+ 008C 80930000          sts _TWI_state,R24
+ 0090                   .dbline 114
+ 0090           ;   TWCR = (1<<TWEN)|                             // TWI Interface enabled.
+ 0090 85EA              ldi R24,165
+ 0092 80937400          sts 116,R24
+ 0096                   .dbline -2
+ 0096           L17:
+ 0096                   .dbline 0 ; func end
+ 0096 0895              ret
+ 0098                   .dbend
+ 0098                   .dbfunc e TWI_Get_Data_From_Transceiver _TWI_Get_Data_From_Transceiver fc
+ 0098           ;              i -> R10
+ 0098           ;        msgSize -> R12
+ 0098           ;            msg -> R14,R15
+                        .even
+ 0098           _TWI_Get_Data_From_Transceiver::
+ 0098 0E940000          xcall push_xgset00FC
+ 009C C22E              mov R12,R18
+ 009E 7801              movw R14,R16
+ 00A0                   .dbline -1
+ 00A0                   .dbline 129
+ 00A0           ;          (1<<TWIE)|(1<<TWINT)|                  // Enable TWI Interupt and clear the flag.
+ 00A0           ;          (0<<TWEA)|(1<<TWSTA)|(0<<TWSTO)|       // Initiate a START condition.
+ 00A0           ;          (0<<TWWC);                             //
+ 00A0           ; }
+ 00A0           ; 
+ 00A0           ; /****************************************************************************
+ 00A0           ; Call this function to read out the requested data from the TWI transceiver buffer. I.e. first call
+ 00A0           ; TWI_Start_Transceiver to send a request for data to the slave. Then Run this function to collect the
+ 00A0           ; data when they have arrived. Include a pointer to where to place the data and the number of bytes
+ 00A0           ; requested (including the address field) in the function call. The function will hold execution (loop)
+ 00A0           ; until the TWI_ISR has completed with the previous operation, before reading out the data and returning.
+ 00A0           ; If there was an error in the previous transmission the function will return the TWI error code.
+ 00A0           ; ****************************************************************************/
+ 00A0           ; unsigned char TWI_Get_Data_From_Transceiver( unsigned char *msg, unsigned char msgSize )
+ 00A0           ; {
+ 00A0           L22:
+ 00A0                   .dbline 132
+ 00A0           ;   unsigned char i;
+ 00A0           ; 
+ 00A0           ;   while ( TWI_Transceiver_Busy() );             // Wait until TWI is ready for next transmission.
+ 00A0           L23:
+ 00A0                   .dbline 132
+ 00A0 B9DF              xcall _TWI_Transceiver_Busy
+ 00A2 0023              tst R16
+ 00A4 E9F7              brne L22
+ 00A6           X5:
+ 00A6                   .dbline 134
+ 00A6           ; 
+ 00A6           ;   if( TWI_statusReg )               // Last transmission competed successfully.              
+ 00A6 20900100          lds R2,_TWI_statusReg
+ 00AA 2220              tst R2
+ 00AC 89F0              breq L25
+ 00AE           X6:
+ 00AE                   .dbline 135
+ 00AE           ;   {                                             
+ 00AE                   .dbline 136
+ 00AE           ;     for ( i=0; i<msgSize; i++ )                 // Copy data from Transceiver buffer.
+ 00AE AA24              clr R10
+ 00B0 0DC0              xjmp L30
+ 00B2           L27:
+ 00B2                   .dbline 137
+ 00B2           ;     {
+ 00B2                   .dbline 138
+ 00B2           ;       msg[ i ] = TWI_buf[ i ];
+ 00B2 80E0              ldi R24,<_TWI_buf
+ 00B4 90E0              ldi R25,>_TWI_buf
+ 00B6 EA2D              mov R30,R10
+ 00B8 FF27              clr R31
+ 00BA E80F              add R30,R24
+ 00BC F91F              adc R31,R25
+ 00BE 2080              ldd R2,z+0
+ 00C0 EA2D              mov R30,R10
+ 00C2 FF27              clr R31
+ 00C4 EE0D              add R30,R14
+ 00C6 FF1D              adc R31,R15
+ 00C8 2082              std z+0,R2
+ 00CA                   .dbline 139
+ 00CA           ;     }
+ 00CA           L28:
+ 00CA                   .dbline 136
+ 00CA A394              inc R10
+ 00CC           L30:
+ 00CC                   .dbline 136
+ 00CC AC14              cp R10,R12
+ 00CE 88F3              brlo L27
+ 00D0           X7:
+ 00D0                   .dbline 140
+ 00D0           ;   }
+ 00D0           L25:
+ 00D0                   .dbline 141
+ 00D0           ;   return( TWI_statusReg );                                   
+ 00D0 00910100          lds R16,_TWI_statusReg
+ 00D4                   .dbline -2
+ 00D4           L21:
+ 00D4                   .dbline 0 ; func end
+ 00D4 0C940000          xjmp pop_xgset00FC
+ 00D8                   .dbsym r i 10 c
+ 00D8                   .dbsym r msgSize 12 c
+ 00D8                   .dbsym r msg 14 pc
+ 00D8                   .dbend
+                        .area vector(rom, abs)
+                        .org 132
+ 0084 0C946C00          jmp _twi_isr
+                        .area text(rom, con, rel)
+ 00D8                   .dbfile G:\wsg\SchoolTrain\FishRobot\机器鱼\机器鱼培训资料\机器鱼培训资料\机器鱼鱼体波程序\fish_0_100115\TWI_Master.c
+                        .area bss(ram, con, rel)
+ 0000                   .dbfile G:\wsg\SchoolTrain\FishRobot\机器鱼\机器鱼培训资料\机器鱼培训资料\机器鱼鱼体波程序\fish_0_100115\TWI_Master.c
+ 0000           L32:
+ 0000                   .blkb 1
+                        .area text(rom, con, rel)
+ 00D8                   .dbfile G:\wsg\SchoolTrain\FishRobot\机器鱼\机器鱼培训资料\机器鱼培训资料\机器鱼鱼体波程序\fish_0_100115\TWI_Master.c
+ 00D8                   .dbfunc e twi_isr _twi_isr fV
+ 00D8                   .dbsym s TWI_bufPtr L32 c
+                        .even
+ 00D8           _twi_isr::
+ 00D8 2A92              st -y,R2
+ 00DA 3A92              st -y,R3
+ 00DC 0A93              st -y,R16
+ 00DE 1A93              st -y,R17
+ 00E0 8A93              st -y,R24
+ 00E2 9A93              st -y,R25
+ 00E4 AA93              st -y,R26
+ 00E6 EA93              st -y,R30
+ 00E8 FA93              st -y,R31
+ 00EA 2FB6              IN R2,63
+ 00EC 2A92              st -y,R2
+ 00EE                   .dbline -1
+ 00EE                   .dbline 152
+ 00EE           ; }
+ 00EE           ; 
+ 00EE           ; // ********** Interrupt Handlers ********** //
+ 00EE           ; /****************************************************************************
+ 00EE           ; This function is the Interrupt Service Routine (ISR), and called when the TWI interrupt is triggered;
+ 00EE           ; that is whenever a TWI event has occurred. This function should not be called directly from the main
+ 00EE           ; application.
+ 00EE           ; ****************************************************************************/
+ 00EE           ; #pragma interrupt_handler twi_isr:34
+ 00EE           ; void twi_isr(void)
+ 00EE           ; {
+ 00EE                   .dbline 155
+ 00EE           ;   static unsigned char TWI_bufPtr;
+ 00EE           ;   
+ 00EE           ;   switch (TWSR)
+ 00EE 00917100          lds R16,113
+ 00F2 1127              clr R17
+ 00F4 0832              cpi R16,40
+ 00F6 E0E0              ldi R30,0
+ 00F8 1E07              cpc R17,R30
+ 00FA 09F4              brne X29
+ 00FC 61C0              xjmp L37
+ 00FE           X29:
+ 00FE           X8:
+ 00FE 88E2              ldi R24,40
+ 0100 90E0              ldi R25,0
+ 0102 8017              cp R24,R16
+ 0104 9107              cpc R25,R17
+ 0106 4CF1              brlt L48
+ 0108           X9:
+ 0108           L47:
+ 0108 0031              cpi R16,16
+ 010A E0E0              ldi R30,0
+ 010C 1E07              cpc R17,R30
+ 010E 09F4              brne X30
+ 0110 54C0              xjmp L36
+ 0112           X30:
+ 0112           X10:
+ 0112 80E1              ldi R24,16
+ 0114 90E0              ldi R25,0
+ 0116 8017              cp R24,R16
+ 0118 9107              cpc R25,R17
+ 011A 7CF0              brlt L50
+ 011C           X11:
+ 011C           L49:
+ 011C 0030              cpi R16,0
+ 011E 0107              cpc R16,R17
+ 0120 09F4              brne X31
+ 0122 A2C0              xjmp L46
+ 0124           X31:
+ 0124           X12:
+ 0124 0030              cpi R16,0
+ 0126 E0E0              ldi R30,0
+ 0128 1E07              cpc R17,R30
+ 012A 0CF4              brge X32
+ 012C 9DC0              xjmp L33
+ 012E           X32:
+ 012E           X13:
+ 012E           L51:
+ 012E 0830              cpi R16,8
+ 0130 E0E0              ldi R30,0
+ 0132 1E07              cpc R17,R30
+ 0134 09F4              brne X33
+ 0136 41C0              xjmp L36
+ 0138           X33:
+ 0138           X14:
+ 0138 97C0              xjmp L33
+ 013A           L50:
+ 013A 0831              cpi R16,24
+ 013C E0E0              ldi R30,0
+ 013E 1E07              cpc R17,R30
+ 0140 09F4              brne X34
+ 0142 3EC0              xjmp L37
+ 0144           X34:
+ 0144           X15:
+ 0144 0831              cpi R16,24
+ 0146 E0E0              ldi R30,0
+ 0148 1E07              cpc R17,R30
+ 014A 0CF4              brge X35
+ 014C 8DC0              xjmp L33
+ 014E           X35:
+ 014E           X16:
+ 014E           L52:
+ 014E 0032              cpi R16,32
+ 0150 E0E0              ldi R30,0
+ 0152 1E07              cpc R17,R30
+ 0154 09F4              brne X36
+ 0156 88C0              xjmp L46
+ 0158           X36:
+ 0158           X17:
+ 0158 87C0              xjmp L33
+ 015A           L48:
+ 015A 0034              cpi R16,64
+ 015C E0E0              ldi R30,0
+ 015E 1E07              cpc R17,R30
+ 0160 09F4              brne X37
+ 0162 5EC0              xjmp L41
+ 0164           X37:
+ 0164           X18:
+ 0164 80E4              ldi R24,64
+ 0166 90E0              ldi R25,0
+ 0168 8017              cp R24,R16
+ 016A 9107              cpc R25,R17
+ 016C 84F0              brlt L54
+ 016E           X19:
+ 016E           L53:
+ 016E 0033              cpi R16,48
+ 0170 E0E0              ldi R30,0
+ 0172 1E07              cpc R17,R30
+ 0174 09F4              brne X38
+ 0176 78C0              xjmp L46
+ 0178           X38:
+ 0178           X20:
+ 0178 0033              cpi R16,48
+ 017A E0E0              ldi R30,0
+ 017C 1E07              cpc R17,R30
+ 017E 0CF4              brge X39
+ 0180 73C0              xjmp L33
+ 0182           X39:
+ 0182           X21:
+ 0182           L55:
+ 0182 0833              cpi R16,56
+ 0184 E0E0              ldi R30,0
+ 0186 1E07              cpc R17,R30
+ 0188 09F4              brne X40
+ 018A 6AC0              xjmp L45
+ 018C           X40:
+ 018C           X22:
+ 018C 6DC0              xjmp L33
+ 018E           L54:
+ 018E 0035              cpi R16,80
+ 0190 E0E0              ldi R30,0
+ 0192 1E07              cpc R17,R30
+ 0194 09F4              brne X41
+ 0196 34C0              xjmp L40
+ 0198           X41:
+ 0198           X23:
+ 0198 80E5              ldi R24,80
+ 019A 90E0              ldi R25,0
+ 019C 8017              cp R24,R16
+ 019E 9107              cpc R25,R17
+ 01A0 34F0              brlt L57
+ 01A2           X24:
+ 01A2           L56:
+ 01A2 0834              cpi R16,72
+ 01A4 E0E0              ldi R30,0
+ 01A6 1E07              cpc R17,R30
+ 01A8 09F4              brne X42
+ 01AA 5EC0              xjmp L46
+ 01AC           X42:
+ 01AC           X25:
+ 01AC 5DC0              xjmp L33
+ 01AE           L57:
+ 01AE 0835              cpi R16,88
+ 01B0 E0E0              ldi R30,0
+ 01B2 1E07              cpc R17,R30
+ 01B4 09F4              brne X43
+ 01B6 43C0              xjmp L44
+ 01B8           X43:
+ 01B8           X26:
+ 01B8 57C0              xjmp L33
+ 01BA           L36:
+ 01BA                   .dbline 159
+ 01BA           ;   {
+ 01BA           ;     case TWI_START:             // START has been transmitted  
+ 01BA           ;     case TWI_REP_START:         // Repeated START has been transmitted
+ 01BA           ;       TWI_bufPtr = 0;           // Set buffer pointer to the TWI Address location
+ 01BA 2224              clr R2
+ 01BC 20920000          sts L32,R2
+ 01C0           L37:
+ 01C0                   .dbline 162
+ 01C0           ;     case TWI_MTX_ADR_ACK:       // SLA+W has been tramsmitted and ACK received
+ 01C0           ;     case TWI_MTX_DATA_ACK:      // Data byte has been tramsmitted and ACK received
+ 01C0           ;       if (TWI_bufPtr < TWI_msgSize)
+ 01C0 20900100          lds R2,_TWI_msgSize
+ 01C4 30900000          lds R3,L32
+ 01C8 3214              cp R3,R2
+ 01CA 98F4              brsh L38
+ 01CC           X27:
+ 01CC                   .dbline 163
+ 01CC           ;       {
+ 01CC                   .dbline 167
+ 01CC           ;         /////////////////////////////////////////////延时~~
+ 01CC           ;        // t_delay_nms(100);
+ 01CC           ;         //////////////////////////////////////////////延时~~~
+ 01CC           ;         TWDR = TWI_buf[TWI_bufPtr++];
+ 01CC 232C              mov R2,R3
+ 01CE 3324              clr R3
+ 01D0 822D              mov R24,R2
+ 01D2 8F5F              subi R24,255    ; addi 1
+ 01D4 80930000          sts L32,R24
+ 01D8 80E0              ldi R24,<_TWI_buf
+ 01DA 90E0              ldi R25,>_TWI_buf
+ 01DC E22D              mov R30,R2
+ 01DE FF27              clr R31
+ 01E0 E80F              add R30,R24
+ 01E2 F91F              adc R31,R25
+ 01E4 2080              ldd R2,z+0
+ 01E6 20927300          sts 115,R2
+ 01EA                   .dbline 168
+ 01EA           ;         TWCR = (1<<TWEN)|                                 // TWI Interface enabled
+ 01EA 85E8              ldi R24,133
+ 01EC 80937400          sts 116,R24
+ 01F0                   .dbline 172
+ 01F0           ;                (1<<TWIE)|(1<<TWINT)|                      // Enable TWI Interupt and clear the flag to send byte
+ 01F0           ;                (0<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|           //
+ 01F0           ;                (0<<TWWC);                                 //  
+ 01F0           ;       }else                    // Send STOP after last byte
+ 01F0 42C0              xjmp L34
+ 01F2           L38:
+ 01F2                   .dbline 173
+ 01F2           ;       {
+ 01F2                   .dbline 174
+ 01F2           ;         TWI_statusReg = TRUE;                 // Set status bits to completed successfully. 
+ 01F2 81E0              ldi R24,1
+ 01F4 80930100          sts _TWI_statusReg,R24
+ 01F8                   .dbline 175
+ 01F8           ;         TWCR = (1<<TWEN)|                                 // TWI Interface enabled
+ 01F8 84E9              ldi R24,148
+ 01FA 80937400          sts 116,R24
+ 01FE                   .dbline 179
+ 01FE           ;                (0<<TWIE)|(1<<TWINT)|                      // Disable TWI Interrupt and clear the flag
+ 01FE           ;                (0<<TWEA)|(0<<TWSTA)|(1<<TWSTO)|           // Initiate a STOP condition.
+ 01FE           ;                (0<<TWWC);                                 //
+ 01FE           ;       }
+ 01FE                   .dbline 180
+ 01FE           ;       break;
+ 01FE 3BC0              xjmp L34
+ 0200           L40:
+ 0200                   .dbline 182
+ 0200           ;     case TWI_MRX_DATA_ACK:      // Data byte has been received and ACK tramsmitted
+ 0200           ;       TWI_buf[TWI_bufPtr++] = TWDR;
+ 0200 20900000          lds R2,L32
+ 0204 3324              clr R3
+ 0206 822D              mov R24,R2
+ 0208 8F5F              subi R24,255    ; addi 1
+ 020A 80930000          sts L32,R24
+ 020E 80E0              ldi R24,<_TWI_buf
+ 0210 90E0              ldi R25,>_TWI_buf
+ 0212 E22D              mov R30,R2
+ 0214 FF27              clr R31
+ 0216 E80F              add R30,R24
+ 0218 F91F              adc R31,R25
+ 021A 20907300          lds R2,115
+ 021E 2082              std z+0,R2
+ 0220           L41:
+ 0220                   .dbline 184
+ 0220           ;     case TWI_MRX_ADR_ACK:       // SLA+R has been tramsmitted and ACK received
+ 0220           ;       if (TWI_bufPtr < (TWI_msgSize-1) )                  // Detect the last byte to NACK it.
+ 0220 80910100          lds R24,_TWI_msgSize
+ 0224 8150              subi R24,1
+ 0226 20900000          lds R2,L32
+ 022A 2816              cp R2,R24
+ 022C 20F4              brsh L42
+ 022E           X28:
+ 022E                   .dbline 185
+ 022E           ;       {
+ 022E                   .dbline 186
+ 022E           ;         TWCR = (1<<TWEN)|                                 // TWI Interface enabled
+ 022E 85EC              ldi R24,197
+ 0230 80937400          sts 116,R24
+ 0234                   .dbline 190
+ 0234           ;                (1<<TWIE)|(1<<TWINT)|                      // Enable TWI Interupt and clear the flag to read next byte
+ 0234           ;                (1<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|           // Send ACK after reception
+ 0234           ;                (0<<TWWC);                                 //  
+ 0234           ;       }else                    // Send NACK after next reception
+ 0234 20C0              xjmp L34
+ 0236           L42:
+ 0236                   .dbline 191
+ 0236           ;       {
+ 0236                   .dbline 192
+ 0236           ;         TWCR = (1<<TWEN)|                                 // TWI Interface enabled
+ 0236 85E8              ldi R24,133
+ 0238 80937400          sts 116,R24
+ 023C                   .dbline 196
+ 023C           ;                (1<<TWIE)|(1<<TWINT)|                      // Enable TWI Interupt and clear the flag to read next byte
+ 023C           ;                (0<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|           // Send NACK after reception
+ 023C           ;                (0<<TWWC);                                 // 
+ 023C           ;       }    
+ 023C                   .dbline 197
+ 023C           ;       break; 
+ 023C 1CC0              xjmp L34
+ 023E           L44:
+ 023E                   .dbline 199
+ 023E           ;     case TWI_MRX_DATA_NACK:     // Data byte has been received and NACK tramsmitted
+ 023E           ;       TWI_buf[TWI_bufPtr] = TWDR;
+ 023E 80E0              ldi R24,<_TWI_buf
+ 0240 90E0              ldi R25,>_TWI_buf
+ 0242 E0910000          lds R30,L32
+ 0246 FF27              clr R31
+ 0248 E80F              add R30,R24
+ 024A F91F              adc R31,R25
+ 024C 20907300          lds R2,115
+ 0250 2082              std z+0,R2
+ 0252                   .dbline 200
+ 0252           ;       TWI_statusReg = TRUE;                 // Set status bits to completed successfully. 
+ 0252 81E0              ldi R24,1
+ 0254 80930100          sts _TWI_statusReg,R24
+ 0258                   .dbline 201
+ 0258           ;       TWCR = (1<<TWEN)|                                 // TWI Interface enabled
+ 0258 84E9              ldi R24,148
+ 025A 80937400          sts 116,R24
+ 025E                   .dbline 205
+ 025E           ;              (0<<TWIE)|(1<<TWINT)|                      // Disable TWI Interrupt and clear the flag
+ 025E           ;              (0<<TWEA)|(0<<TWSTA)|(1<<TWSTO)|           // Initiate a STOP condition.
+ 025E           ;              (0<<TWWC);                                 //
+ 025E           ;       break;      
+ 025E 0BC0              xjmp L34
+ 0260           L45:
+ 0260                   .dbline 207
+ 0260           ;     case TWI_ARB_LOST:          // Arbitration lost
+ 0260           ;       TWCR = (1<<TWEN)|                                 // TWI Interface enabled
+ 0260 85EA              ldi R24,165
+ 0262 80937400          sts 116,R24
+ 0266                   .dbline 211
+ 0266           ;              (1<<TWIE)|(1<<TWINT)|                      // Enable TWI Interupt and clear the flag
+ 0266           ;              (0<<TWEA)|(1<<TWSTA)|(0<<TWSTO)|           // Initiate a (RE)START condition.
+ 0266           ;              (0<<TWWC);                                 //
+ 0266           ;       break;
+ 0266 07C0              xjmp L34
+ 0268           L46:
+ 0268           L33:
+ 0268                   .dbline 218
+ 0268           ;     case TWI_MTX_ADR_NACK:      // SLA+W has been tramsmitted and NACK received
+ 0268           ;     case TWI_MRX_ADR_NACK:      // SLA+R has been tramsmitted and NACK received    
+ 0268           ;     case TWI_MTX_DATA_NACK:     // Data byte has been tramsmitted and NACK received
+ 0268           ;           // No relevant state information available; TWINT = ??
+ 0268           ;     case TWI_BUS_ERROR:         // Bus error due to an illegal START or STOP condition
+ 0268           ;     default:     
+ 0268           ;       TWI_state = TWSR;                                 // Store TWSR and automatically sets clears noErrors bit.
+ 0268 20907100          lds R2,113
+ 026C 20920000          sts _TWI_state,R2
+ 0270                   .dbline 220
+ 0270           ;                                                         // Reset TWI Interface
+ 0270           ;       TWCR = (1<<TWEN)|                                 // Enable TWI-interface and release TWI pins
+ 0270 84E0              ldi R24,4
+ 0272 80937400          sts 116,R24
+ 0276                   .dbline 224
+ 0276           ;              (0<<TWIE)|(0<<TWINT)|                      // Disable Interupt
+ 0276           ;              (0<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|           // No Signal requests
+ 0276           ;              (0<<TWWC);                                 //
+ 0276           ;   }
+ 0276           L34:
+ 0276                   .dbline -2
+ 0276           L31:
+ 0276                   .dbline 0 ; func end
+ 0276 2990              ld R2,y+
+ 0278 2FBE              OUT 63,R2
+ 027A F991              ld R31,y+
+ 027C E991              ld R30,y+
+ 027E A991              ld R26,y+
+ 0280 9991              ld R25,y+
+ 0282 8991              ld R24,y+
+ 0284 1991              ld R17,y+
+ 0286 0991              ld R16,y+
+ 0288 3990              ld R3,y+
+ 028A 2990              ld R2,y+
+ 028C 1895              reti
+ 028E                   .dbend
+                        .area bss(ram, con, rel)
+ 0001                   .dbfile G:\wsg\SchoolTrain\FishRobot\机器鱼\机器鱼培训资料\机器鱼培训资料\机器鱼鱼体波程序\fish_0_100115\TWI_Master.c
+ 0001           _TWI_msgSize:
+ 0001                   .blkb 1
+ 0002                   .dbsym s TWI_msgSize _TWI_msgSize c
+ 0002           _TWI_buf::
+ 0002                   .blkb 4
+ 0006                   .dbsym e TWI_buf _TWI_buf A[4:4]c
+ 0006           ; }

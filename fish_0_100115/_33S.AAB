@@ -1,0 +1,1 @@
+-g -Mavr_enhanced -use_elpm -lD:\wsgwork\机器海豚\正常版本\fish_0_100115\11fish.c 11fish.i 11fish.s 

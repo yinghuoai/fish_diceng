@@ -1,0 +1,248 @@
+XL
+H 5 areas D global symbols
+M TWI_Master.c
+S push_xgset303C Ref0000
+S push_xgset00FC Ref0000
+S pop_xgset303C Ref0000
+S pop_xgset00FC Ref0000
+A text size 28E flags 0
+dbfile G:\wsg\SchoolTrain\FishRobot\机器鱼\机器鱼培训资料\机器鱼培训资料\机器鱼鱼体波程序\fish_0_100115\TWI_Master.c
+dbfunc e TWI_Master_Initialise 0 fV
+dbline FFFFFFFF 0
+dbline 29 0
+dbline 2A 0
+dbline 2D 6
+dbline 31 C
+dbline FFFFFFFE 12
+dbline 0 12
+dbfunc e TWI_Transceiver_Busy 14 fc
+dbline FFFFFFFF 14
+dbline 3C 14
+dbline 3E 14
+dbline FFFFFFFE 1A
+dbline 0 1A
+dbfunc e TWI_Get_State_Info 1C fc
+dbline FFFFFFFF 1C
+dbline 47 1C
+dbline 48 1C
+dbline 48 1C
+dbline 49 22
+dbline FFFFFFFE 26
+dbline 0 26
+dbfunc e TWI_Start_Transceiver_With_Data 28 fV
+dbsym r temp 14 c
+dbsym r msgSize C c
+dbsym r msg A pc
+dbline FFFFFFFF 30
+dbline 54 30
+dbline 57 30
+dbline 57 30
+dbline 59 36
+dbline 5A 3A
+dbline 5B 42
+dbline 5C 46
+dbline 5D 46
+dbline 5E 4A
+dbline 5D 62
+dbline 5D 64
+dbline 5F 68
+dbline 60 68
+dbline 61 6E
+dbline 62 74
+dbline FFFFFFFE 7A
+dbline 0 7A
+dbfunc e TWI_Start_Transceiver 7E fV
+dbline FFFFFFFF 7E
+dbline 6E 7E
+dbline 6F 7E
+dbline 6F 7E
+dbline 70 84
+dbline 71 8A
+dbline 72 90
+dbline FFFFFFFE 96
+dbline 0 96
+dbfunc e TWI_Get_Data_From_Transceiver 98 fc
+dbsym r i A c
+dbsym r msgSize C c
+dbsym r msg E pc
+dbline FFFFFFFF A0
+dbline 81 A0
+dbline 84 A0
+dbline 84 A0
+dbline 86 A6
+dbline 87 AE
+dbline 88 AE
+dbline 89 B2
+dbline 8A B2
+dbline 8B CA
+dbline 88 CA
+dbline 88 CC
+dbline 8C D0
+dbline 8D D0
+dbline FFFFFFFE D4
+dbline 0 D4
+dbfunc e twi_isr D8 fV
+dbline FFFFFFFF EE
+dbline 98 EE
+dbline 9B EE
+dbline 9F 1BA
+dbline A2 1C0
+dbline A3 1CC
+dbline A7 1CC
+dbline A8 1EA
+dbline AC 1F0
+dbline AD 1F2
+dbline AE 1F2
+dbline AF 1F8
+dbline B3 1FE
+dbline B4 1FE
+dbline B6 200
+dbline B8 220
+dbline B9 22E
+dbline BA 22E
+dbline BE 234
+dbline BF 236
+dbline C0 236
+dbline C4 23C
+dbline C5 23C
+dbline C7 23E
+dbline C8 252
+dbline C9 258
+dbline CD 25E
+dbline CF 260
+dbline D3 266
+dbline DA 268
+dbline DC 270
+dbline E0 276
+dbline FFFFFFFE 276
+dbline 0 276
+S _TWI_Get_State_Info Def001C
+S _TWI_Transceiver_Busy Def0014
+S _twi_isr Def00D8
+S _TWI_Start_Transceiver_With_Data Def0028
+S _TWI_Get_Data_From_Transceiver Def0098
+S _TWI_Master_Initialise Def0000
+S _TWI_Start_Transceiver Def007E
+A data size 2 flags 20
+dbfile G:\wsg\SchoolTrain\FishRobot\机器鱼\机器鱼培训资料\机器鱼培训资料\机器鱼鱼体波程序\fish_0_100115\TWI_Master.c
+dbsym s TWI_state 0 c
+dbsym e TWI_statusReg 1 c
+S _TWI_statusReg Def0001
+A idata size 2 flags 0
+A vector size 88 flags C
+A bss size 6 flags 20
+dbfile G:\wsg\SchoolTrain\FishRobot\机器鱼\机器鱼培训资料\机器鱼培训资料\机器鱼鱼体波程序\fish_0_100115\TWI_Master.c
+dbfile G:\wsg\SchoolTrain\FishRobot\机器鱼\机器鱼培训资料\机器鱼培训资料\机器鱼鱼体波程序\fish_0_100115\TWI_Master.c
+dbsym s TWI_bufPtr 0 c
+dbfile G:\wsg\SchoolTrain\FishRobot\机器鱼\机器鱼培训资料\机器鱼培训资料\机器鱼鱼体波程序\fish_0_100115\TWI_Master.c
+dbsym s TWI_msgSize 1 c
+dbsym e TWI_buf 2 A[4:4]c
+S _TWI_buf Def0002
+T 00 00 F8
+R 00 00 02 00
+T 01 00 00
+R 00 00 02 00
+T 00 00 8C E0 80 93 70 00 8F EF 80 93 73 00 84 E0
+R 00 00 00 00
+T 0E 00 80 93 74 00 08 95
+R 00 00 00 00
+T 14 00 00 91 74 00 01 70 08 95
+R 00 00 00 00
+T 1C 00 FB DF 00 23 E9 F7 00 91 00 00 08 95
+R 00 00 00 00 00 0A 01 00
+T 28 00 0E 94 00 00 C2 2E 58 01 F1 DF 00 23 E9 F7
+R 00 00 00 00 12 04 00 00
+T 36 00 C0 92 01 00 F5 01 20 80 20 92 02 00 20 FC
+R 00 00 00 00 00 04 04 00 00 0C 04 00
+T 44 00 11 C0 41 E0 0D C0 E4 2F FF 27 EA 0D FB 1D
+R 00 00 00 00
+T 52 00 20 80 80 E0 90 E0 E4 2F FF 27 E8 0F F9 1F
+R 00 00 00 00 20 04 04 00 02 00 40 06 04 00 02 00
+T 60 00 20 82 43 95 4C 15 88 F3 22 24 20 92 01 00
+R 00 00 00 00 00 0E 01 00
+T 6E 00 88 EF 80 93 00 00 85 EA 80 93 74 00
+R 00 00 00 00 00 06 01 00
+T 7A 00 0C 94 00 00
+R 00 00 00 00 12 04 02 00
+T 7E 00 CA DF 00 23 E9 F7 22 24 20 92 01 00 88 EF
+R 00 00 00 00 00 0C 01 00
+T 8C 00 80 93 00 00 85 EA 80 93 74 00 08 95
+R 00 00 00 00 00 04 01 00
+T 98 00 0E 94 00 00 C2 2E 78 01 B9 DF 00 23 E9 F7
+R 00 00 00 00 12 04 01 00
+T A6 00 20 90 01 00 22 20 89 F0 AA 24 0D C0 80 E0
+R 00 00 00 00 00 04 01 00 20 0E 04 00 02 00
+T B4 00 90 E0 EA 2D FF 27 E8 0F F9 1F 20 80 EA 2D
+R 00 00 00 00 40 02 04 00 02 00
+T C2 00 FF 27 EE 0D FF 1D 20 82 A3 94 AC 14 88 F3
+R 00 00 00 00
+T D0 00 00 91 01 00 0C 94 00 00
+R 00 00 00 00 00 04 01 00 12 08 03 00
+T 84 00 0C 94 6C 00
+R 00 00 03 00 10 04 00 00
+T D8 00 2A 92 3A 92 0A 93 1A 93 8A 93 9A 93 AA 93
+R 00 00 00 00
+T E6 00 EA 93 FA 93 2F B6 2A 92 00 91 71 00 11 27
+R 00 00 00 00
+T F4 00 08 32 E0 E0 1E 07 09 F4 61 C0 88 E2 90 E0
+R 00 00 00 00
+T 02 01 80 17 91 07 4C F1 00 31 E0 E0 1E 07 09 F4
+R 00 00 00 00
+T 10 01 54 C0 80 E1 90 E0 80 17 91 07 7C F0 00 30
+R 00 00 00 00
+T 1E 01 01 07 09 F4 A2 C0 00 30 E0 E0 1E 07 0C F4
+R 00 00 00 00
+T 2C 01 9D C0 08 30 E0 E0 1E 07 09 F4 41 C0 97 C0
+R 00 00 00 00
+T 3A 01 08 31 E0 E0 1E 07 09 F4 3E C0 08 31 E0 E0
+R 00 00 00 00
+T 48 01 1E 07 0C F4 8D C0 00 32 E0 E0 1E 07 09 F4
+R 00 00 00 00
+T 56 01 88 C0 87 C0 00 34 E0 E0 1E 07 09 F4 5E C0
+R 00 00 00 00
+T 64 01 80 E4 90 E0 80 17 91 07 84 F0 00 33 E0 E0
+R 00 00 00 00
+T 72 01 1E 07 09 F4 78 C0 00 33 E0 E0 1E 07 0C F4
+R 00 00 00 00
+T 80 01 73 C0 08 33 E0 E0 1E 07 09 F4 6A C0 6D C0
+R 00 00 00 00
+T 8E 01 00 35 E0 E0 1E 07 09 F4 34 C0 80 E5 90 E0
+R 00 00 00 00
+T 9C 01 80 17 91 07 34 F0 08 34 E0 E0 1E 07 09 F4
+R 00 00 00 00
+T AA 01 5E C0 5D C0 08 35 E0 E0 1E 07 09 F4 43 C0
+R 00 00 00 00
+T B8 01 57 C0 22 24 20 92 00 00 20 90 01 00 30 90
+R 00 00 00 00 00 08 04 00 00 0C 04 00
+T C6 01 00 00 32 14 98 F4 23 2C 33 24 82 2D 8F 5F
+R 00 00 00 00 00 02 04 00
+T D4 01 80 93 00 00 80 E0
+R 00 00 00 00 00 04 04 00 20 06 04 00 02 00
+T DA 01 90 E0 E2 2D FF 27 E8 0F F9 1F 20 80 20 92
+R 00 00 00 00 40 02 04 00 02 00
+T E8 01 73 00 85 E8 80 93 74 00 42 C0 81 E0 80 93
+R 00 00 00 00
+T F6 01 01 00 84 E9 80 93 74 00 3B C0 20 90 00 00
+R 00 00 00 00 00 02 01 00 00 0E 04 00
+T 04 02 33 24 82 2D 8F 5F 80 93 00 00 80 E0
+R 00 00 00 00 00 0A 04 00 20 0C 04 00 02 00
+T 10 02 90 E0 E2 2D FF 27 E8 0F F9 1F 20 90 73 00
+R 00 00 00 00 40 02 04 00 02 00
+T 1E 02 20 82 80 91 01 00 81 50 20 90 00 00 28 16
+R 00 00 00 00 00 06 04 00 00 0C 04 00
+T 2C 02 20 F4 85 EC 80 93 74 00 20 C0 85 E8 80 93
+R 00 00 00 00
+T 3A 02 74 00 1C C0 80 E0 90 E0 E0 91
+R 00 00 00 00 20 06 04 00 02 00 40 08 04 00 02 00
+T 44 02 00 00 FF 27 E8 0F F9 1F 20 90 73 00 20 82
+R 00 00 00 00 00 02 04 00
+T 52 02 81 E0 80 93 01 00 84 E9 80 93 74 00 0B C0
+R 00 00 00 00 00 06 01 00
+T 60 02 85 EA 80 93 74 00 07 C0 20 90 71 00 20 92
+R 00 00 00 00
+T 6E 02 00 00 84 E0 80 93 74 00 29 90 2F BE F9 91
+R 00 00 00 00 00 02 01 00
+T 7C 02 E9 91 A9 91 99 91 89 91 19 91 09 91 39 90
+R 00 00 00 00
+T 8A 02 29 90 18 95
+R 00 00 00 00
